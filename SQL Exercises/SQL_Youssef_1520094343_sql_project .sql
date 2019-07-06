@@ -31,11 +31,14 @@ SELECT *
 	FROM `Facilities` 
 	WHERE membercost != 0
 Result:
- -Tennis Court 1
- -Tennis Court 2
- -Massage Room 1
- -Massage Room 2
- -Squash Court
+
+facid	name	membercost	guestcost	initialoutlay	monthlymaintenance	
+0	Tennis Court 1	5.0	25.0	10000	200
+1	Tennis Court 2	5.0	25.0	8000	200
+4	Massage Room 1	9.9	80.0	4000	3000
+5	Massage Room 2	9.9	80.0	4000	3000
+6	Squash Court	3.5	17.5	5000	80
+
 
 /* Q2: How many facilities do not charge a fee to members? */
 
@@ -43,7 +46,11 @@ SELECT COUNT(*) AS no_charge_facilities
 	FROM `Facilities`
 	WHERE membercost = 0 
 Result:
+
+
+no_charge_facilities
 4
+
 
 /* Q3: How can you produce a list of facilities that charge a fee to members,
 where the fee is less than 20% of the facility's monthly maintenance cost?
@@ -57,6 +64,18 @@ SELECT  facid AS 'Facility ID',
    FROM `Facilities`
    WHERE membercost < 0.2*monthlymaintenance	
 	
+Result:
+
+Facility ID	Facility Name	Member Cost	Monthly Maintenance	
+0		Tennis Court 1 	5.0		200
+1		Tennis Court 2	5.0		200
+2		Badminton Court	0.0		50
+3		Table Tennis	0.0		10
+4		Massage Room 1	9.9		3000
+5		Massage Room 2	9.9		3000
+6		Squash Court	3.5		80
+7		Snooker Table	0.0		15
+8		Pool Table	0.0		15
 
 /* Q4: How can you retrieve the details of facilities with ID 1 and 5?
 Write the query without using the OR operator. */
@@ -65,6 +84,14 @@ SELECT *
 	FROM `Facilities`
  	WHERE facid BETWEEN 1 AND 5
 
+Result:
+
+facid	name	membercost	guestcost	initialoutlay	monthlymaintenance	
+1	Tennis Court 2	5.0	25.0	8000	200
+2	Badminton Court	0.0	15.5	4000	50
+3	Table Tennis	0.0	5.0	320	10
+4	Massage Room 1	9.9	80.0	4000	3000
+5	Massage Room 2	9.9	80.0	4000	3000
 
 
 /* Q5: How can you produce a list of facilities, with each labelled as
@@ -78,6 +105,19 @@ SELECT name,
 	     ELSE 'cheap' END AS 'cheap/expensive'
 FROM `Facilities` 
 
+Result:
+
+name	monthlymaintenance	cheap/expensive	
+Tennis Court 1	200	expensive
+Tennis Court 2	200	expensive
+Badminton Court	50	cheap
+Table Tennis	10	cheap
+Massage Room 1	3000	expensive
+Massage Room 2	3000	expensive
+Squash Court	80	cheap
+Snooker Table	15	cheap
+Pool Table	15	cheap
+
 
 /* Q6: You'd like to get the first and last name of the last member(s)
 who signed up. Do not use the LIMIT clause for your solution. */
@@ -88,6 +128,13 @@ SELECT firstname,
 FROM `Members`
 ORDER BY joindate DESC
 LIMIT 1
+
+Result:
+
+
+firstname	surname	joindate	
+Darren	Smith	2012-09-26 18:08:45
+
 
 /* Q7: How can you produce a list of all members who have used a tennis court?
 Include in your output the name of the court, and the name of the member
@@ -106,6 +153,19 @@ LEFT JOIN Facilities
 ON Bookings.facid = Facilities.facid
 WHERE Bookings.facid IN (0,1)
 ORDER BY full_name
+
+Result(First Few Rows):
+
+full_name	memid	facid	court_name	
+Anne Baker	12	1	Tennis Court 2
+Anne Baker	12	0	Tennis Court 1
+Anne Baker	12	1	Tennis Court 2
+Anne Baker	12	1	Tennis Court 2
+Anne Baker	12	0	Tennis Court 1
+Anne Baker	12	1	Tennis Court 2
+Anne Baker	12	1	Tennis Court 2
+Anne Baker	12	0	Tennis Court 1
+
 
 /* Q8: How can you produce a list of bookings on the day of 2012-09-14 which
 will cost the member (or guest) more than $30? Remember that guests have
@@ -130,7 +190,12 @@ AND Facilities.guestcost*Bookings.slots  > 30
 AND Facilities.membercost*Bookings.slots > 30
 ORDER BY 4 DESC
 
+Result:
 
+
+Facility Name	Full Name	Time of Booking	Total Member Cost	
+Massage Room 2	GUEST GUEST	2012-09-14 11:00:00	320.0
+Massage Room 1	Jemima Farrell	2012-09-14 14:00:00	39.6
 
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
@@ -156,8 +221,11 @@ WHERE Facilities.guestcost*sub.slots  > 30
 AND Facilities.membercost*sub.slots > 30
 ORDER BY 7 DESC
 
+Result:
 
-
+name	memid	facid	Full Name	starttime	slots	Total Member Cost	
+Massage Room 2	0	5	GUEST GUEST	2012-09-14 11:00:00	4	320.0
+Massage Room 1	13	4	Jemima Farrell	2012-09-14 14:00:00	4	39.6
 
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
 The output of facility name and total revenue, sorted by revenue. Remember
@@ -175,3 +243,10 @@ GROUP BY 1,2
 HAVING SUM(CASE WHEN Bookings.memid = 0 THEN slots*guestcost
            ELSE slots*membercost END) < 1000
 ORDER BY 3 DESC
+
+Result:
+
+Facility ID	Facility Name	Total Revenue	
+8	Pool Table	270.0
+7	Snooker Table	240.0
+3	Table Tennis	180.0
